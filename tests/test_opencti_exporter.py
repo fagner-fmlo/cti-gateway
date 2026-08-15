@@ -64,6 +64,25 @@ class OpenCTIExporterTests(unittest.TestCase):
         self.assertEqual(["identity", "indicator", "report"], object_types(objects))
         self.assertFalse(has_sector_identity(objects, "Crypto"))
 
+    def test_exporter_passes_source_publication_date_to_report(self):
+        api_client = FakeOpenCTIClient()
+
+        send_bundle(
+            api_client,
+            "Historical MISP event",
+            "description",
+            75,
+            indicators=[{"type": "domain", "indicator": "one.example"}],
+            published_at="2017-02-18",
+        )
+
+        report = first_object(
+            api_client.stix2.imports[0]["bundle"]["objects"],
+            "report",
+        )
+        self.assertTrue(report["published"].startswith("2017-02-18T00:00:00"))
+        self.assertEqual("2017-02-18", report["x_narrowcti_source_date"])
+
     def test_export_mode_imports_curated_graph_entities(self):
         api_client = FakeOpenCTIClient()
 
