@@ -514,6 +514,26 @@ class StixBuilderTests(unittest.TestCase):
         self.assertEqual(2, len(indicator_objects))
         self.assertEqual(2, len(reports[0]["object_refs"]))
 
+    def test_build_report_bundle_preserves_source_publication_date(self):
+        bundle, indicator_count = build_report_bundle(
+            "Historical MISP event",
+            "Imported source event",
+            80,
+            [{"type": "domain", "indicator": "example.com"}],
+            published_at="2017-02-18",
+        )
+
+        data = json.loads(bundle.serialize())
+        report = next(item for item in data["objects"] if item["type"] == "report")
+        indicator = next(
+            item for item in data["objects"] if item["type"] == "indicator"
+        )
+
+        self.assertEqual(1, indicator_count)
+        self.assertTrue(report["published"].startswith("2017-02-18T00:00:00"))
+        self.assertEqual("2017-02-18", report["x_narrowcti_source_date"])
+        self.assertTrue(indicator["valid_from"].startswith("2017-02-18T00:00:00"))
+
     def test_build_report_bundle_uses_custom_identity_name(self):
         bundle, _ = build_report_bundle(
             "Example report",
