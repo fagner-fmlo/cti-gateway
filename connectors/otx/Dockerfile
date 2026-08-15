@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN for package in python3-msgpack python3-setuptools; do dpkg --purge "$package" || true; done
+RUN find /usr/local/lib /usr/lib -type d \( -name 'setuptools' -o -name 'setuptools-*.dist-info' -o -name 'msgpack' -o -name 'msgpack-*.dist-info' \) -prune -exec rm -rf {} +
 
 COPY connectors/otx/requirements.txt /app/
 RUN python -m pip uninstall --yes setuptools msgpack || true
