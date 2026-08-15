@@ -11,8 +11,12 @@ RUN apt-get update && apt-get install -y \
     libmagic-dev \
     && rm -rf /var/lib/apt/lists/*
 
+RUN for package in python3-msgpack python3-setuptools; do dpkg --purge "$package" || true; done
+RUN find /usr/local/lib /usr/lib -type d \( -name 'setuptools-*.dist-info' -o -name 'msgpack-*.dist-info' \) -prune -exec rm -rf {} +
+
 COPY connectors/otx/requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m pip uninstall --yes pip
 
 COPY connectors/otx/*.py /app/
 COPY connectors /app/connectors
