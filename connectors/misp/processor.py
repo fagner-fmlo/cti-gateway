@@ -3,6 +3,7 @@ import re
 import time
 from collections.abc import Mapping
 from dataclasses import replace
+from inspect import Parameter, signature
 
 try:
     import yaml
@@ -195,6 +196,7 @@ def graph_stix_preview(
         candidate_score(candidate),
         graph_candidate_policy=graph_policy,
         identity_name=identity_name,
+        published_at=event.get("date") or event.get("created"),
     )
     preview = dict(summary)
     preview["status"] = "preview"
@@ -2413,8 +2415,21 @@ class MISPProcessor:
             graph_policy = None
             graph_metadata = None
             export_kwargs = {
-                "identity_name": feed_source_identity_name(candidate_ref.source)
+                "identity_name": feed_source_identity_name(candidate_ref.source),
+                "published_at": candidate.event.get("date")
+                or candidate.event.get("created"),
             }
+            try:
+                exporter_parameters = signature(self.exporter).parameters.values()
+                accepts_published_at = any(
+                    parameter.name == "published_at"
+                    or parameter.kind == Parameter.VAR_KEYWORD
+                    for parameter in exporter_parameters
+                )
+            except (TypeError, ValueError):
+                accepts_published_at = True
+            if not accepts_published_at:
+                export_kwargs.pop("published_at", None)
             if getattr(self.settings, "graph_export_mode", "audit") == "export":
                 graph_policy, graph_metadata = self.graph_policy_for_export(
                     candidate_ref,

@@ -136,10 +136,14 @@ def build_report_bundle(
     score,
     indicators=None,
     identity_name="NarrowCTI Gateway",
+    published_at=None,
 ):
     now = datetime.now(timezone.utc)
+    publication_time = source_publication_time(published_at, now)
     identity = build_identity(identity_name)
-    indicator_objects = build_indicators(indicators or [], identity.id, score, now)
+    indicator_objects = build_indicators(
+        indicators or [], identity.id, score, publication_time
+    )
     object_refs = [indicator.id for indicator in indicator_objects] or [identity.id]
 
     report = build_stix_report(
@@ -149,6 +153,8 @@ def build_report_bundle(
         now,
         identity.id,
         object_refs,
+        source_date=published_at,
+        published=publication_time,
     )
 
     bundle = Bundle(objects=[identity, *indicator_objects, report], allow_custom=True)
@@ -162,10 +168,14 @@ def build_curated_report_bundle(
     indicators=None,
     graph_candidate_policy=None,
     identity_name="NarrowCTI Gateway",
+    published_at=None,
 ):
     now = datetime.now(timezone.utc)
+    publication_time = source_publication_time(published_at, now)
     identity = build_identity(identity_name)
-    indicator_objects = build_indicators(indicators or [], identity.id, score, now)
+    indicator_objects = build_indicators(
+        indicators or [], identity.id, score, publication_time
+    )
     accepted_candidates = graph_accepted_candidates(graph_candidate_policy)
     external_object_ids = indicator_object_ids(indicator_objects)
     graph_content = build_graph_content(
@@ -186,6 +196,8 @@ def build_curated_report_bundle(
         now,
         identity.id,
         object_refs,
+        source_date=published_at,
+        published=publication_time,
     )
     relationship_content = build_graph_relationships(
         accepted_candidates,
@@ -229,8 +241,10 @@ def build_graph_report_bundle(
     score,
     graph_candidate_policy=None,
     identity_name="NarrowCTI Gateway",
+    published_at=None,
 ):
     now = datetime.now(timezone.utc)
+    publication_time = source_publication_time(published_at, now)
     identity = build_identity(identity_name)
     accepted_candidates = graph_accepted_candidates(graph_candidate_policy)
     graph_content = build_graph_content(accepted_candidates, identity.id, now)
@@ -243,6 +257,8 @@ def build_graph_report_bundle(
         now,
         identity.id,
         report_refs,
+        source_date=published_at,
+        published=publication_time,
     )
     relationship_content = build_graph_relationships(
         accepted_candidates,
@@ -277,7 +293,19 @@ def build_graph_report_bundle(
     return bundle, summary
 
 
-def build_stix_report(name, description, score, now, identity_id, object_refs):
+def build_stix_report(
+    name,
+    description,
+    score,
+    now,
+    identity_id,
+    object_refs,
+    source_date=None,
+    published=None,
+):
+    custom_properties = {}
+    if clean_string(source_date):
+        custom_properties["x_narrowcti_source_date"] = clean_string(source_date)
     return Report(
         id=deterministic_report_id(name, description),
         name=name,
@@ -286,9 +314,10 @@ def build_stix_report(name, description, score, now, identity_id, object_refs):
         confidence=score,
         created=now,
         modified=now,
-        published=now,
+        published=published or now,
         created_by_ref=identity_id,
         object_refs=object_refs,
+        custom_properties=custom_properties,
         allow_custom=True,
     )
 
@@ -493,6 +522,7 @@ def build_graph_relationships(
                 candidate,
                 relationship_mode,
             ),
+            **graph_relationship_temporal_kwargs(candidate),
             allow_custom=True,
         )
         graph_relationships.append(relationship)
@@ -1529,6 +1559,20 @@ def graph_relationship_custom_properties(candidate, relationship_mode):
     return custom
 
 
+def graph_relationship_temporal_kwargs(candidate):
+    """Expose source activity time as a native STIX relationship period."""
+    attributes = candidate_attributes(candidate)
+    source_time = first_clean_value(
+        attributes.get("source_date"),
+        attributes.get("source_created"),
+        attributes.get("source_timestamp"),
+    )
+    parsed = parse_timestamp(source_time)
+    if parsed is None:
+        return {}
+    return {"start_time": parsed}
+
+
 def graph_special_relationship(
     candidate,
     graph_object_ids,
@@ -1572,6 +1616,7 @@ def object_reference_candidate_to_relationship(candidate, graph_alias_ids, ident
         ),
         created_by_ref=identity_id,
         custom_properties=graph_relationship_custom_properties(candidate, "semantic"),
+        **graph_relationship_temporal_kwargs(candidate),
         allow_custom=True,
     )
 
@@ -1709,6 +1754,11 @@ def parse_timestamp(value):
         return parsed.astimezone(timezone.utc)
     except (OverflowError, ValueError):
         return None
+
+
+def source_publication_time(value, fallback):
+    """Return a valid source timestamp, falling back to connector time."""
+    return parse_timestamp(value) or fallback
 
 
 def stix_timestamp(value):
