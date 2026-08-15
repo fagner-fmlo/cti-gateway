@@ -4,6 +4,19 @@ All notable NarrowCTI Community Edition changes are summarized here.
 
 Detailed operator-facing release notes remain in `docs/release-v*.md`.
 
+## v1.0.1 - 2026-08-15
+
+Timestamp provenance patch for MISP-to-OpenCTI ingestion.
+
+- Preserve the source MISP `event.date` as the STIX report publication date and
+  as an explicit `x_narrowcti_source_date` property.
+- Use the source event date for indicator `valid_from` when available, while
+  retaining the OpenCTI registration timestamp as the technical creation time.
+- Expose source activity dates as native STIX relationship start times so
+  reports can distinguish functional evidence from OpenCTI ingestion time.
+- Keep compatibility with custom exporters that predate the optional
+  `published_at` argument.
+
 ## v1.0.0 - 2026-07-12
 
 Production-ready Community Edition release for the existing OTX and MISP

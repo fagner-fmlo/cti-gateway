@@ -289,6 +289,7 @@ def send_bundle(
     identity_name="NarrowCTI Gateway",
     graph_candidate_policy=None,
     graph_export_mode="audit",
+    published_at=None,
 ):
     export_enabled = normalize_graph_export_mode(graph_export_mode) == "export"
     if export_enabled:
@@ -299,6 +300,7 @@ def send_bundle(
             indicators,
             graph_candidate_policy=graph_candidate_policy,
             identity_name=identity_name,
+            published_at=published_at,
         )
     else:
         bundle, indicator_count = build_report_bundle(
@@ -307,6 +309,7 @@ def send_bundle(
             score,
             indicators,
             identity_name=identity_name,
+            published_at=published_at,
     )
     bundle_json = bundle.serialize()
     worker_errors, restore_worker_logger = capture_pycti_worker_errors(api_client)
