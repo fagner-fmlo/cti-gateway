@@ -18,6 +18,7 @@ RUN find /usr/local/lib /usr/lib -type d \( -name 'setuptools-*.dist-info' -o -n
 
 COPY connectors/otx/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --retries 5 -r requirements.txt
+RUN python -m pip uninstall --yes pip
 
 COPY connectors /app/connectors
 COPY core /app/core
