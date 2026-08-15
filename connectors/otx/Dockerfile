@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY connectors/otx/requirements.txt /app/
+RUN python -m pip uninstall --yes setuptools msgpack || true
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY connectors/otx/*.py /app/
