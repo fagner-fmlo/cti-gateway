@@ -33,15 +33,17 @@ NARROWCTI_GATEWAY_IMAGE
 | `0` | Git tag `v0.8.0` | Moving latest release in major line. |
 | `0.9.0` | Git tag `v0.9.0` | Immutable release tag after publication. |
 | `0.9` | Git tag `v0.9.0` | Moving latest patch in minor line after publication. |
-| `1.0.0` | Git tag `v1.0.0` | Immutable release tag published 2026-07-12. |
-| `1.0` | Git tag `v1.0.0` | Moving latest patch in minor line. |
+| `1.0.0` | Git tag `v1.0.0` | Historical immutable release tag published 2026-07-13. |
+| `1.0.1` | Git tag `v1.0.1` | Immutable release tag published 2026-08-15. |
+| `1.0` | Git tag `v1.0.1` | Moving latest patch in minor line. |
+| `1` | Git tag `v1.0.1` | Moving latest release in major line. |
 | `sha-<short-sha>` | Every published build | Immutable traceability tag. |
 
 Operators should pin production-like environments to an immutable release tag,
 for example:
 
 ```text
-NARROWCTI_GATEWAY_IMAGE=ghcr.io/narrowcti/narrowcti-gateway:1.0.0
+NARROWCTI_GATEWAY_IMAGE=ghcr.io/narrowcti/narrowcti-gateway:1.0.1
 ```
 
 Use `latest` only when intentionally tracking the newest stable `main` build.
