@@ -1401,6 +1401,24 @@ class GraphStixBuilderTests(unittest.TestCase):
         self.assertEqual(0, summary["graph_relationship_count"])
         self.assertEqual(3, summary["skipped_candidate_count"])
 
+    def test_graph_relationship_preserves_source_activity_date(self):
+        bundle, _summary = build_graph_report_bundle(
+            "Historical MISP graph report",
+            "graph context",
+            80,
+            graph_candidate_policy={"accepted": [infrastructure_candidate()]},
+            published_at="2017-02-18",
+        )
+
+        data = json.loads(bundle.serialize())
+        report = next(item for item in data["objects"] if item["type"] == "report")
+        relationship = next(
+            item for item in data["objects"] if item["type"] == "relationship"
+        )
+
+        self.assertTrue(report["published"].startswith("2017-02-18T00:00:00"))
+        self.assertTrue(relationship["start_time"].startswith("2026-06-20T00:00:00"))
+
 
 def attack_pattern_candidate():
     return {
