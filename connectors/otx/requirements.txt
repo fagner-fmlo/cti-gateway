@@ -2,7 +2,7 @@ pycti==7.260807.0
 setuptools==82.0.1
 msgpack==1.2.1
 fastapi==0.141.1
-uvicorn==0.52.1
+uvicorn==0.52.4
 stix2==3.0.2
 requests==2.33.0
 python-dateutil==2.9.0.post0
