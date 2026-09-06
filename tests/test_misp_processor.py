@@ -1511,6 +1511,8 @@ class MISPProcessorTests(unittest.TestCase):
                 "category": "Payload delivery",
                 "value": (
                     "title: Suspicious PowerShell\n"
+                    "references:\n"
+                    "  - https://attack.mitre.org/techniques/T1059/001/\n"
                     "logsource:\n"
                     "  product: windows\n"
                     "detection:\n"
@@ -1519,7 +1521,10 @@ class MISPProcessorTests(unittest.TestCase):
                     "  condition: selection"
                 ),
                 "comment": "Suspicious PowerShell",
-                "Tag": [{"name": "tlp:green"}],
+                "Tag": [
+                    {"name": "tlp:green"},
+                    {"name": "attack.t1059.001"},
+                ],
             },
             {
                 "uuid": "attribute-rule-deleted",
@@ -1592,8 +1597,18 @@ class MISPProcessorTests(unittest.TestCase):
         self.assertEqual(5, len(metadata["misp_detection_rules"]))
         self.assertEqual("sigma", metadata["misp_detection_rules"][0]["rule_type"])
         self.assertEqual(
+            ["T1059.001"],
+            metadata["misp_detection_rules"][0]["attack_pattern_ids"],
+        )
+        self.assertEqual(
+            "misp-tags+sigma-tags-or-references",
+            metadata["misp_detection_rules"][0]["attack_id_source"],
+        )
+        self.assertEqual(
             (
                 "title: Suspicious PowerShell\n"
+                "references:\n"
+                "  - https://attack.mitre.org/techniques/T1059/001/\n"
                 "logsource:\n"
                 "  product: windows\n"
                 "detection:\n"
@@ -1638,6 +1653,9 @@ class MISPProcessorTests(unittest.TestCase):
                 record["entity_type"] == "detection_rule"
                 and record["stix_object_type"] == "indicator"
                 and record["attributes"]["pattern_type"] == "sigma"
+                and record["attributes"].get("relationship_source_value")
+                == "T1059.001"
+                and record["relationship_type"] == "detects"
                 for record in graph_evidence["records"]
             )
         )
@@ -1650,6 +1668,8 @@ class MISPProcessorTests(unittest.TestCase):
                 and candidate["attributes"]["pattern"]
                 == (
                     "title: Suspicious PowerShell\n"
+                    "references:\n"
+                    "  - https://attack.mitre.org/techniques/T1059/001/\n"
                     "logsource:\n"
                     "  product: windows\n"
                     "detection:\n"

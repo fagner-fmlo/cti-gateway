@@ -1958,6 +1958,76 @@ class GraphEvidenceTests(unittest.TestCase):
             evidence["records"],
         )
 
+    def test_builds_explicit_sigma_attack_relationship_evidence(self):
+        evidence = build_graph_evidence(
+            {
+                "misp_detection_rules": [
+                    {
+                        "value": "Suspicious PowerShell",
+                        "rule_type": "sigma",
+                        "pattern_type": "sigma",
+                        "pattern": "title: Suspicious PowerShell",
+                        "attribute_uuid": "attribute-rule-2",
+                        "tags": ["attack.execution", "tlp:green"],
+                        "attack_pattern_ids": ["T1059.001", "T1059.003"],
+                        "attack_id_source": "sigma-tags-or-references",
+                        "source_field": "Attribute[0]",
+                    }
+                ]
+            },
+            source_key="misp:misp",
+            external_id="event-2",
+            title="MISP Sigma event",
+        )
+
+        linked = [
+            record
+            for record in evidence["records"]
+            if record["entity_type"] == "detection_rule"
+            and record["attributes"].get("relationship_source_value")
+        ]
+        self.assertEqual(2, len(linked))
+        self.assertEqual({"T1059.001", "T1059.003"}, {
+            record["attributes"]["relationship_source_value"]
+            for record in linked
+        })
+        self.assertTrue(all(record["relationship_type"] == "detects" for record in linked))
+        self.assertTrue(all(record["confidence"] == 85 for record in linked))
+        self.assertTrue(
+            all(
+                record["attributes"]["relationship_source_stix_object_type"]
+                == "attack-pattern"
+                for record in linked
+            )
+        )
+
+    def test_does_not_link_incompatible_detection_rule(self):
+        evidence = build_graph_evidence(
+            {
+                "misp_detection_rules": [
+                    {
+                        "value": "Unsupported Sigma",
+                        "rule_type": "sigma",
+                        "pattern_type": "sigma",
+                        "pattern": "title: Unsupported Sigma",
+                        "opencti_indicator_compatible": False,
+                        "attack_pattern_ids": ["T1059.001"],
+                        "attack_id_source": "misp-tags",
+                        "source_field": "Attribute[1]",
+                    }
+                ]
+            },
+            source_key="misp:misp",
+            external_id="event-3",
+            title="MISP incompatible Sigma event",
+        )
+
+        self.assertEqual(1, evidence["record_count"])
+        record = evidence["records"][0]
+        self.assertEqual("detection_rule", record["entity_type"])
+        self.assertEqual("detects", record["relationship_type"])
+        self.assertNotIn("relationship_source_value", record.get("attributes", {}))
+
 
 if __name__ == "__main__":
     unittest.main()

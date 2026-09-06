@@ -4,6 +4,13 @@ All notable NarrowCTI Community Edition changes are summarized here.
 
 Detailed operator-facing release notes remain in `docs/release-v*.md`.
 
+## Unreleased
+
+- Add deterministic `Indicator --detects--> Attack-Pattern` graph candidates
+  for MISP Sigma/YARA rules with explicit ATT&CK tags or references. The
+  existing audit, dry-run and export gates remain authoritative, and rules
+  without explicit mappings are not linked by co-occurrence.
+
 ## v1.0.1 - 2026-08-15
 
 Timestamp provenance patch for MISP-to-OpenCTI ingestion.

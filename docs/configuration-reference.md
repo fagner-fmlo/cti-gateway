@@ -189,6 +189,13 @@ Credential format, roles and endpoint behavior are documented in
 | `NARROWCTI_OPENCTI_GRAPH_LOOKUP` | `false` | Read-only canonical lookup before creation. Existing entities are reused; relationships are deduplicated only after exact source, target, direction and relationship-type confirmation. Errors fail open and are logged. |
 | `NARROWCTI_ENABLE_INFRASTRUCTURE_VICTIMOLOGY_EXPORT` | `false` | Explicitly promotes a same-event MISP `Infrastructure -> targets -> victimology` candidate whose source evidence and inference are exact. Keep disabled until OpenCTI API/UI validation confirms the expected Diamond victimology behavior. It does not approve unrelated or unvalidated relationships. |
 
+Detection-rule mappings do not require a separate environment variable. They
+use the same `NARROWCTI_GRAPH_EXPORT_MODE` gate above: only explicit ATT&CK ids
+found in Sigma `tags`/`references` or in the associated MISP tags can produce
+`Indicator --detects--> Attack-Pattern`. `audit` and `dry-run` remain
+non-mutating; `export` promotes the idempotent relationship. Rules without an
+explicit ATT&CK reference are retained without a semantic detection link.
+
 Infrastructure victimology promotion is intentionally opt-in. With the default
 `false`, NarrowCTI keeps the candidate in audit evidence with
 `relationship_requires_opencti_validation`. Setting it to `true` only changes
