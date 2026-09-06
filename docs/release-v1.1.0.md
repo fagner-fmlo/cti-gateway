@@ -65,7 +65,7 @@ protected publication workflow completes.
 - Unmapped-rule context fix: commit `2a76e97` / PR #63.
 - Dependency maintenance batch: commit `16ed640` / PR #65.
 - Promotion PR to `dev`: [#67](https://github.com/NarrowCTI/narrowcti/pull/67).
-- Promotion PR to `main`: to be recorded after creation.
+- Promotion PR to `main`: [#68](https://github.com/NarrowCTI/narrowcti/pull/68).
 - Git tag and release commit: to be recorded only after publication.
 
 The intended release path remains:
