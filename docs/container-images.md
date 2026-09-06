@@ -34,16 +34,18 @@ NARROWCTI_GATEWAY_IMAGE
 | `0.9.0` | Git tag `v0.9.0` | Immutable release tag after publication. |
 | `0.9` | Git tag `v0.9.0` | Moving latest patch in minor line after publication. |
 | `1.0.0` | Git tag `v1.0.0` | Historical immutable release tag published 2026-07-13. |
-| `1.0.1` | Git tag `v1.0.1` | Immutable release tag published 2026-08-15. |
-| `1.0` | Git tag `v1.0.1` | Moving latest patch in minor line. |
-| `1` | Git tag `v1.0.1` | Moving latest release in major line. |
+| `1.0.1` | Git tag `v1.0.1` | Historical immutable release tag published 2026-08-15. |
+| `1.0` | Git tag `v1.0.1` | Historical moving patch line. |
+| `1.1.0` | Git tag `v1.1.0` | Immutable release tag published 2026-09-06. |
+| `1.1` | Git tag `v1.1.0` | Moving latest patch in minor line. |
+| `1` | Git tag `v1.1.0` | Moving latest release in major line. |
 | `sha-<short-sha>` | Every published build | Immutable traceability tag. |
 
 Operators should pin production-like environments to an immutable release tag,
 for example:
 
 ```text
-NARROWCTI_GATEWAY_IMAGE=ghcr.io/narrowcti/narrowcti-gateway:1.0.1
+NARROWCTI_GATEWAY_IMAGE=ghcr.io/narrowcti/narrowcti-gateway:1.1.0
 ```
 
 Use `latest` only when intentionally tracking the newest stable `main` build.
@@ -74,7 +76,7 @@ Publication requires:
 - job-scoped write permission to GitHub Packages, available only to the
   publication job.
 
-The v1.0 candidate publication gate uses this order for the exact candidate
+The v1.1 publication gate uses this order for the exact candidate
 image:
 
 ```text
