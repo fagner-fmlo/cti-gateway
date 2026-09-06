@@ -64,7 +64,7 @@ protected publication workflow completes.
 - Detection relationship feature: commit `2bc86be` / PR #62.
 - Unmapped-rule context fix: commit `2a76e97` / PR #63.
 - Dependency maintenance batch: commit `16ed640` / PR #65.
-- Promotion PR to `dev`: to be recorded after creation.
+- Promotion PR to `dev`: [#67](https://github.com/NarrowCTI/narrowcti/pull/67).
 - Promotion PR to `main`: to be recorded after creation.
 - Git tag and release commit: to be recorded only after publication.
 
