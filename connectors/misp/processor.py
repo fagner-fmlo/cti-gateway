@@ -56,6 +56,8 @@ from connectors.misp.models import MISPEventCandidate
 
 
 CVE_ID_PATTERN = re.compile(r"\bCVE-\d{4}-\d{4,}\b", re.IGNORECASE)
+ATTACK_ID_PATTERN = re.compile(r"\bT\d{4}(?:\.\d{3})?\b", re.IGNORECASE)
+ATTACK_ID_PATH_PATTERN = re.compile(r"\b(T\d{4})[/.](\d{3})\b", re.IGNORECASE)
 DETECTION_RULE_TYPES = {"yara", "sigma", "snort", "suricata", "pcre"}
 
 
@@ -1656,6 +1658,7 @@ def extract_misp_detection_rules(event):
 def misp_detection_rule_sources(event):
     event = compact_mapping(event)
     sources = []
+    event_tags = event_tag_names(event)
     for index, attribute in enumerate(list_values(event.get("Attribute"))):
         attribute = compact_mapping(attribute)
         if not attribute:
@@ -1665,6 +1668,8 @@ def misp_detection_rule_sources(event):
                 "source_field": f"Attribute[{index}]",
                 "attribute": attribute,
                 "object": {},
+                "event_tags": event_tags,
+                "object_tags": [],
             }
         )
     for object_index, misp_object in enumerate(list_values(event.get("Object"))):
@@ -1684,6 +1689,8 @@ def misp_detection_rule_sources(event):
                     ),
                     "attribute": attribute,
                     "object": misp_object,
+                    "event_tags": event_tags,
+                    "object_tags": event_tag_names(misp_object),
                 }
             )
     return sources
@@ -1708,6 +1715,16 @@ def normalize_misp_detection_rule(source):
             compatibility_reason,
         ) = sigma_rule_opencti_compatibility(rule_content)
     title = detection_rule_title(rule_type, raw_rule_content, attribute)
+    tags = unique_text_values(
+        attribute_tags(attribute)
+        + list_values(source.get("object_tags"))
+        + list_values(source.get("event_tags"))
+    )
+    attack_ids, attack_id_source = detection_rule_attack_ids(
+        rule_type,
+        rule_content,
+        tags,
+    )
     return compact_mapping(
         {
             "value": title,
@@ -1722,10 +1739,124 @@ def normalize_misp_detection_rule(source):
             "object_uuid": misp_object.get("uuid"),
             "first_seen": attribute.get("first_seen"),
             "last_seen": attribute.get("last_seen"),
-            "tags": [tag_name for tag_name in attribute_tags(attribute) if tag_name],
+            "tags": tags,
+            "attack_pattern_ids": attack_ids,
+            "attack_id_source": attack_id_source,
             "source_field": source.get("source_field"),
         }
     )
+
+
+def event_tag_names(value):
+    value = compact_mapping(value)
+    raw_tags = value.get("Tag") or value.get("tags")
+    return unique_text_values(
+        [
+            tag.get("name") or tag.get("Name")
+            if isinstance(tag, Mapping)
+            else tag
+            for tag in list_values(raw_tags)
+        ]
+    )
+
+
+def unique_text_values(values):
+    seen = set()
+    result = []
+    for value in values or []:
+        text = clean_text(value)
+        key = text.casefold()
+        if not text or key in seen:
+            continue
+        seen.add(key)
+        result.append(text)
+    return result
+
+
+def detection_rule_attack_ids(rule_type, rule_content, tags):
+    """Return ATT&CK IDs only when a rule contains an explicit mapping."""
+    ids = []
+    source = ""
+
+    for value in tags or []:
+        for normalized in attack_ids_from_text(value):
+            if normalized not in ids:
+                ids.append(normalized)
+    if ids:
+        source = "misp-tags"
+
+    if rule_type == "sigma":
+        explicit_values = sigma_explicit_mapping_values(rule_content)
+        for value in explicit_values:
+            for normalized in attack_ids_from_text(value):
+                if normalized not in ids:
+                    ids.append(normalized)
+        if explicit_values and ids and not source:
+            source = "sigma-tags-or-references"
+        elif explicit_values and ids:
+            source = f"{source}+sigma-tags-or-references"
+
+    return normalize_attack_ids(ids), source
+
+
+def attack_ids_from_text(value):
+    text = clean_text(value)
+    ids = [match.upper() for match in ATTACK_ID_PATTERN.findall(text)]
+    ids.extend(
+        f"{parent.upper()}.{subtechnique}"
+        for parent, subtechnique in ATTACK_ID_PATH_PATTERN.findall(text)
+    )
+    return unique_text_values(ids)
+
+
+def normalize_attack_ids(values):
+    """Prefer a referenced sub-technique over its parent path component."""
+    normalized = unique_text_values(values)
+    subtechnique_parents = {
+        value.split(".", 1)[0].casefold()
+        for value in normalized
+        if "." in value
+    }
+    return [
+        value
+        for value in normalized
+        if "." in value or value.casefold() not in subtechnique_parents
+    ]
+
+
+def sigma_explicit_mapping_values(rule_content):
+    """Extract Sigma tags/references, never arbitrary description text."""
+    content = str(rule_content or "").strip()
+    if not content:
+        return []
+    values = []
+    if yaml:
+        try:
+            parsed = yaml.safe_load(content)
+        except Exception:
+            parsed = None
+        if isinstance(parsed, Mapping):
+            for field in ("tags", "references"):
+                values.extend(flatten_text(parsed.get(field)))
+            return values
+
+    active_field = ""
+    for line in content.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        field_match = re.match(r"^(tags|references)\s*:\s*(.*)$", stripped, re.IGNORECASE)
+        if field_match:
+            active_field = field_match.group(1).casefold()
+            inline = field_match.group(2).strip()
+            if inline:
+                values.append(inline)
+            continue
+        if active_field and (stripped.startswith("-") or line.startswith(" ")):
+            values.append(stripped.lstrip("- ").strip())
+            continue
+        active_field = ""
+    return values
 
 
 def misp_detection_rule_type(attribute, misp_object):

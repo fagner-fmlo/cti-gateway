@@ -1801,6 +1801,7 @@ def graph_relationship_is_candidate_to_anchor(candidate, source_ref, target_ref)
     candidate_to_anchor_relationships = {
         ("attack_data_source", "detects"),
         ("attack_data_component", "detects"),
+        ("detection_rule", "detects"),
         ("course_of_action", "mitigates"),
     }
     return (

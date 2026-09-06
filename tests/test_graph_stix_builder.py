@@ -231,6 +231,37 @@ class GraphStixBuilderTests(unittest.TestCase):
         self.assertIn("missing detection selection", note["content"])
         self.assertIn("title: Broken Sigma", note["content"])
 
+    def test_builds_detection_rule_detects_attack_pattern_relationship(self):
+        bundle, summary = build_graph_report_bundle(
+            "Sigma relationship report",
+            "explicit Sigma ATT&CK mapping",
+            85,
+            graph_candidate_policy={
+                "accepted": [
+                    attack_pattern_candidate(),
+                    detection_rule_attack_pattern_candidate(),
+                ]
+            },
+        )
+
+        data = json.loads(bundle.serialize())
+        attack_pattern = next(
+            item for item in data["objects"] if item["type"] == "attack-pattern"
+        )
+        indicator = next(item for item in data["objects"] if item["type"] == "indicator")
+        relationships = [
+            item
+            for item in data["objects"]
+            if item["type"] == "relationship"
+            and item["relationship_type"] == "detects"
+        ]
+
+        self.assertEqual(1, len(relationships))
+        self.assertEqual(indicator["id"], relationships[0]["source_ref"])
+        self.assertEqual(attack_pattern["id"], relationships[0]["target_ref"])
+        self.assertEqual(1, summary["semantic_relationship_count"])
+        self.assertEqual(1, summary["relationship_counts"]["detects"])
+
     def test_native_threat_actor_individual_is_not_exported_as_generic_stix_actor(self):
         bundle, summary = build_graph_report_bundle(
             "Curated graph report",
@@ -2301,6 +2332,24 @@ def detection_rule_candidate():
             "attribute_uuid": "attribute-rule-1",
         },
     }
+
+
+def detection_rule_attack_pattern_candidate():
+    candidate = detection_rule_candidate()
+    candidate["fingerprint"] = "rule-attack-pattern-1"
+    candidate["relationship_confidence"] = 85
+    candidate["attributes"] = dict(candidate["attributes"])
+    candidate["attributes"].update(
+        {
+            "relationship_source_stix_object_type": "attack-pattern",
+            "relationship_source_value": "T1059",
+            "relationship_source_field": "Attribute[0].Tag",
+            "relationship_inference": "explicit-detection-rule-attack-reference",
+            "attack_pattern_ids": ["T1059"],
+            "attack_id_source": "misp-tags",
+        }
+    )
+    return candidate
 
 
 def incompatible_sigma_detection_rule_candidate():
