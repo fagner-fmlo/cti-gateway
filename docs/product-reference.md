@@ -3,19 +3,19 @@
 This is the canonical public reference for NarrowCTI Community Edition
 behavior. It connects the operator workflow, configuration, source adapters,
 graph promotion, evidence and release gates. Versioned documents remain
-historical snapshots; this document describes the current v1.0 behavior.
+historical snapshots; this document describes the current v1.1 behavior.
 
 ## Version Status
 
 | Label | Meaning | Current value |
 | --- | --- | --- |
-| Latest published release | Latest immutable GitHub Release and stable tag | `v1.0.1`, published 2026-08-15 |
-| Previous stable release | Previous GitHub Release and immutable tag | `v1.0.0`, published 2026-07-13 |
-| v1.0.1 publication | GitHub Release, tag and image publication | Complete |
+| Latest published release | Latest immutable GitHub Release and stable tag | `v1.1.0`, published 2026-09-06 |
+| Previous stable release | Previous GitHub Release and immutable tag | `v1.0.1`, published 2026-08-15 |
+| v1.1.0 publication | GitHub Release, tag and image publication | Complete |
 | Historical tags | Earlier implementation snapshots | `v0.2.0` through `v0.9.0` |
 
 A Git tag without a GitHub Release is historical version evidence, not a
-complete public release. The v1.0.1 tag, GitHub Release, release notes, image
+complete public release. The v1.1.0 tag, GitHub Release, release notes, image
 publication and final evidence all refer to the same `main` release commit.
 
 ## Product Boundary
@@ -166,7 +166,7 @@ from a failed export. See `opencti-coverage-matrix.md`.
 | Graph audit | `narrowcti-opencti-relationship-audit` | Relationships and Diamond/Kill Chain claims match evidence |
 | Release | `release-process.md` | Same commit is merged, tagged, released and documented |
 
-The v1.0.1 evidence record is maintained in `release-v1.0.1.md`. A green unit
+The v1.1.0 evidence record is maintained in `release-v1.1.0.md`. A green unit
 test does not replace a real-feed or
 OpenCTI-relationship validation.
 

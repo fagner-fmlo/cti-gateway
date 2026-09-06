@@ -2,12 +2,10 @@
 
 ## Status
 
-Status: release candidate.
+Status: released.
 
-The candidate is prepared on `release/v1.1.0` from the reviewed `dev` branch.
-It becomes an official release only after the protected `dev -> main` flow,
-required checks, the immutable `v1.1.0` tag and the GitHub Release are complete.
-Until then, `v1.0.1` remains the latest published stable release.
+NarrowCTI v1.1.0 was promoted through the protected `dev -> main` flow,
+validated, tagged immutably and published as a GitHub Release on 2026-09-06.
 
 ## Release Theme
 
@@ -46,17 +44,27 @@ stable deployments pinned to the immutable release image after publication:
 NARROWCTI_GATEWAY_IMAGE=ghcr.io/narrowcti/narrowcti-gateway:1.1.0
 ```
 
-The moving `latest` line must not be treated as the immutable release until the
-protected publication workflow completes.
+The moving `latest` line points to the same approved image digest for the
+published `main` build; production deployments should remain pinned to `1.1.0`.
 
 ## Validation Record
 
 - Dependabot batch PR #65 was reviewed and integrated into `dev`.
 - The existing local validation evidence for the integrated code passed 544
   unit tests, Ruff, Bandit and strict dependency audits.
-- The protected CI, security, DAST and container-image gates for the release
-  candidate must pass before promotion and publication. Their run links will
-  be added to this document before the final tag.
+- [CI run 34049175951](https://github.com/NarrowCTI/narrowcti/actions/runs/34049175951)
+  passed on the final `main` promotion commit.
+- [Security and Quality run 34049175956](https://github.com/NarrowCTI/narrowcti/actions/runs/34049175956)
+  passed on the final `main` promotion commit.
+- [DAST run 34049175962](https://github.com/NarrowCTI/narrowcti/actions/runs/34049175962)
+  passed on the final `main` promotion commit.
+- [Container Image run 34049176023](https://github.com/NarrowCTI/narrowcti/actions/runs/34049176023)
+  built, scanned, generated the SBOM and published the approved image after
+  release-environment approval.
+- The published `latest`, `main` and `sha-37776f4` tags resolve to
+  `sha256:3635d053b4d6b76d724ea055723d9325bab7ebe8d404d0af273aba8d1012b200`.
+- The exact image artifact and CycloneDX SBOM were retained by the workflow
+  (artifact IDs `9994030699` and `9994027778`).
 
 ## Traceability
 
@@ -66,7 +74,9 @@ protected publication workflow completes.
 - Dependency maintenance batch: commit `16ed640` / PR #65.
 - Promotion PR to `dev`: [#67](https://github.com/NarrowCTI/narrowcti/pull/67).
 - Promotion PR to `main`: [#68](https://github.com/NarrowCTI/narrowcti/pull/68).
-- Git tag and release commit: to be recorded only after publication.
+- Git tag: `v1.1.0`.
+- Release commit: the immutable commit targeted by tag `v1.1.0`.
+- Canonical image: `ghcr.io/narrowcti/narrowcti-gateway:1.1.0`.
 
 The intended release path remains:
 
