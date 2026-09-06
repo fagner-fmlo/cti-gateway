@@ -74,6 +74,27 @@ legacy `Report + Indicators` objects and appends accepted graph entities and
 relationships to the same bundle. Local graph deduplication state is marked
 only after the OpenCTI import call succeeds.
 
+### Explicit detection-rule relationships
+
+MISP detection rules are promoted as semantic relationships only when the rule
+contains an explicit ATT&CK reference. For Sigma, NarrowCTI reads ATT&CK ids
+(including the `/T1234/001/` URL form) from the rule's `tags` or `references`
+fields and from MISP event, object or attribute tags. Each confirmed mapping
+produces:
+
+`Indicator (Sigma/YARA/etc.) --detects--> Attack-Pattern`
+
+The relationship carries the source field, the exact ATT&CK id and the
+`explicit-detection-rule-attack-reference` inference marker. A rule without an
+explicit id remains an indicator (or note when incompatible) and is never
+linked merely because it occurs in the same event as an ATT&CK object. Multiple
+ids create multiple idempotent relationship candidates for the same rule.
+
+The existing graph gate controls the lifecycle: `audit` records the candidate,
+`dry-run` reports the would-create relationship, and `export` sends it to
+OpenCTI. The report generator consumes the persisted `detects` relationship;
+it does not infer or create this link itself.
+
 MISP also has an explicit graph-only replay gate for curation improvements.
 When `NARROWCTI_GRAPH_REPLAY_ON_ARTIFACT_DEDUP=true` or
 `MISP_GRAPH_REPLAY_ON_ARTIFACT_DEDUP=true`, and
