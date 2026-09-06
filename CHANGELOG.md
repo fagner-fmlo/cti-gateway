@@ -6,10 +6,23 @@ Detailed operator-facing release notes remain in `docs/release-v*.md`.
 
 ## Unreleased
 
+Changes are collected here after the v1.1.0 release candidate is promoted.
+
+## v1.1.0 - 2026-09-06
+
+Detection-relationship and provenance release for the OpenCTI graph.
+
 - Add deterministic `Indicator --detects--> Attack-Pattern` graph candidates
   for MISP Sigma/YARA rules with explicit ATT&CK tags or references. The
   existing audit, dry-run and export gates remain authoritative, and rules
   without explicit mappings are not linked by co-occurrence.
+- Preserve report context when a detection rule has no resolvable ATT&CK
+  relationship, so unmapped rules remain visible instead of being dropped.
+- Consolidate the reviewed Dependabot maintenance batch, including the
+  OpenCTI client, msgpack, Ruff and container build/SBOM action updates.
+
+The relationship capability is source-evidence-driven and idempotent; it does
+not infer a detection link from mere co-occurrence in an event.
 
 ## v1.0.1 - 2026-08-15
 
