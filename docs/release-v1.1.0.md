@@ -60,11 +60,15 @@ published `main` build; production deployments should remain pinned to `1.1.0`.
   passed on the final `main` promotion commit.
 - [Container Image run 34049176023](https://github.com/NarrowCTI/narrowcti/actions/runs/34049176023)
   built, scanned, generated the SBOM and published the approved image after
-  release-environment approval.
-- The published `latest`, `main` and `sha-37776f4` tags resolve to
+  release-environment approval. That pre-tag main build resolved to
   `sha256:3635d053b4d6b76d724ea055723d9325bab7ebe8d404d0af273aba8d1012b200`.
-- The exact image artifact and CycloneDX SBOM were retained by the workflow
-  (artifact IDs `9994030699` and `9994027778`).
+- [Versioned Container Image run 34049999281](https://github.com/NarrowCTI/narrowcti/actions/runs/34049999281)
+  rebuilt the exact tagged commit, passed the same gates and published
+  `1.1.0`, `1.1`, `1`, `latest` and `sha-ce2be22` to
+  `sha256:479884b893475f1e1229dc2d5737846f1ed4356f8a6fa571676475c40b9c645d`.
+- The versioned image artifact and CycloneDX SBOM were integrity-checked by
+  the workflow (artifact IDs `9994257846` and `9994255245`). The SBOM is also
+  attached to the [GitHub Release](https://github.com/NarrowCTI/narrowcti/releases/tag/v1.1.0).
 
 ## Traceability
 
@@ -75,7 +79,8 @@ published `main` build; production deployments should remain pinned to `1.1.0`.
 - Promotion PR to `dev`: [#67](https://github.com/NarrowCTI/narrowcti/pull/67).
 - Promotion PR to `main`: [#68](https://github.com/NarrowCTI/narrowcti/pull/68).
 - Git tag: `v1.1.0`.
-- Release commit: the immutable commit targeted by tag `v1.1.0`.
+- Release commit: `ce2be227391d6df1dd6c5c45b238cf43a8301ed5`.
+- GitHub Release: [NarrowCTI v1.1.0](https://github.com/NarrowCTI/narrowcti/releases/tag/v1.1.0).
 - Canonical image: `ghcr.io/narrowcti/narrowcti-gateway:1.1.0`.
 
 The intended release path remains:
