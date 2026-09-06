@@ -1806,6 +1806,7 @@ def graph_relationship_is_candidate_to_anchor(candidate, source_ref, target_ref)
     }
     return (
         (entity_type, relationship_type) in candidate_to_anchor_relationships
+        and graph_relationship_source_key(candidate)
         and source_ref
         and target_ref
         and source_ref != target_ref
